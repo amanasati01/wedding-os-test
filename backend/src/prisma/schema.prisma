@@ -1,0 +1,298 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum Side {
+  BRIDE
+  GROOM
+}
+
+enum ExpenseStatus {
+  PAID
+  PENDING
+}
+
+enum VendorCategory {
+  PHOTOGRAPHER
+  VIDEOGRAPHER
+  DECORATOR
+  DJ
+  CATERER
+  HOTEL
+  TRANSPORTATION
+  MAKEUP_ARTIST
+  OTHER
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum DocumentType {
+  CONTRACT
+  INVOICE
+  AGREEMENT
+  GUEST_LIST
+  OTHER
+}
+
+enum EventType {
+  ENGAGEMENT
+  HALDI
+  MEHENDI
+  SANGEET
+  WEDDING
+  RECEPTION
+  CUSTOM
+}
+
+model User {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  firstName    String
+  lastName     String
+  displayName  String
+  passwordHash String
+  isActive     Boolean  @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships  WeddingMember[]
+
+  @@index([userId])
+}
+
+model Wedding {
+  id               String   @id @default(uuid())
+  weddingName      String
+  brideName        String
+  groomName        String
+  weddingDate      DateTime
+  location         String?
+  coverImage       String?
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  members          WeddingMember[]
+  budgetCategories BudgetCategory[]
+  expenses         Expense[]
+  guests           Guest[]
+  vendors          Vendor[]
+  events           Event[]
+  albums           Album[]
+  documents        Document[]
+  tasks            Task[]
+}
+
+model WeddingMember {
+  id         String   @id @default(uuid())
+  weddingId  String
+  userId     String
+  role       Role
+  invitedBy  String?
+
+  createdAt  DateTime @default(now())
+
+  wedding    Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([weddingId, userId])
+  @@index([weddingId])
+  @@index([userId])
+  @@index([role])
+}
+
+model BudgetCategory {
+  id              String   @id @default(uuid())
+  name            String
+  allocatedAmount Float
+  color           String?
+
+  weddingId       String
+
+  wedding         Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  expenses        Expense[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([weddingId])
+}
+
+model Expense {
+  id               String @id @default(uuid())
+
+  title            String
+  amount           Float
+  expenseDate      DateTime
+  notes            String?
+
+  status           ExpenseStatus @default(PENDING)
+
+  budgetCategoryId String
+  weddingId        String
+
+  budgetCategory   BudgetCategory @relation(fields: [budgetCategoryId], references: [id], onDelete: Cascade)
+  wedding          Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([budgetCategoryId])
+  @@index([weddingId])
+}
+
+model Guest {
+  id          String @id @default(uuid())
+
+  name        String
+  phone       String?
+  email       String?
+
+  side        Side
+
+  familyGroup String?
+
+  weddingId   String
+  wedding     Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([weddingId])
+}
+
+model Vendor {
+  id          String @id @default(uuid())
+
+  name        String
+  email       String?
+  phone       String?
+
+  address     String?
+  notes       String?
+
+  category    VendorCategory
+
+  weddingId   String
+  wedding     Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([weddingId])
+}
+
+model Event {
+  id          String @id @default(uuid())
+
+  name        String
+  description String?
+  venue       String?
+
+  eventDate   DateTime
+  eventType   EventType @default(CUSTOM)
+
+  weddingId   String
+  wedding     Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([weddingId])
+}
+
+model Task {
+  id          String @id @default(uuid())
+
+  title       String
+  description String?
+
+  assignedTo  String?
+
+  dueDate     DateTime?
+
+  status      TaskStatus @default(TODO)
+
+  weddingId   String
+  wedding     Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([weddingId])
+}
+
+model Album {
+  id          String @id @default(uuid())
+
+  name        String
+  description String?
+
+  weddingId   String
+  wedding     Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  media       Media[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([weddingId])
+}
+
+model Media {
+  id           String @id @default(uuid())
+
+  fileUrl      String
+  thumbnailUrl String?
+
+  mediaType    MediaType
+
+  uploadedBy   String?
+
+  albumId      String
+  album        Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([albumId])
+}
+
+model Document {
+  id           String @id @default(uuid())
+
+  name         String
+  fileUrl      String
+
+  documentType DocumentType
+
+  uploadedBy   String?
+
+  weddingId    String
+  wedding      Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([weddingId])
+}
