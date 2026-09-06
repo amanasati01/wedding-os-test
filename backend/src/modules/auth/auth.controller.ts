@@ -12,9 +12,9 @@ export async function loginHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { userId } = req.body as LoginInput;
+    const { userId, password } = req.body as LoginInput;
 
-    const result = await authService.login(userId, "");
+    const result = await authService.login(userId, password);
 
     res.status(200).json(new APiResponse(true, "Login successful.", result));
   } catch (error) {
@@ -30,7 +30,9 @@ export async function getMeHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const user = await authService.getMe(req.user.id);
+    const { userId } = req.body;
+
+    const user = await authService.getMe(userId);
 
     res
       .status(200)
