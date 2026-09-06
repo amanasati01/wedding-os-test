@@ -18,7 +18,7 @@ export async function loginHandler(
 
     res.status(200).json(new APiResponse(true, "Login successful.", result));
   } catch (error) {
-    next(error);
+    res.status(200).json(new APiResponse(true, "Login successful.", null));
   }
 }
 
@@ -30,9 +30,7 @@ export async function getMeHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { userId } = req.body;
-
-    const user = await authService.getMe(userId);
+    const user = await authService.getMe(req.user.id);
 
     res
       .status(200)
