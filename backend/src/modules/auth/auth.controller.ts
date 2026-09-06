@@ -9,16 +9,14 @@ import type { LoginInput } from "./auth.schema.js";
 export async function loginHandler(
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
-    const { userId, password } = req.body as LoginInput;
+    const { userId } = req.body as LoginInput;
 
-    const result = await authService.login(userId, password);
+    const result = await authService.login(userId, "");
 
-    res.status(200).json(
-      new APiResponse(true, "Login successful.", result)
-    );
+    res.status(200).json(new APiResponse(true, "Login successful.", result));
   } catch (error) {
     next(error);
   }
@@ -29,14 +27,14 @@ export async function loginHandler(
 export async function getMeHandler(
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const user = await authService.getMe(req.user.id);
 
-    res.status(200).json(
-      new APiResponse(true, "User profile retrieved.", user)
-    );
+    res
+      .status(200)
+      .json(new APiResponse(true, "User profile retrieved.", user));
   } catch (error) {
     next(error);
   }
