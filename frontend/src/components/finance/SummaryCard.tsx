@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 
 type SummaryCardProps = {
-  title: string;
+  title: string | " ";
   value: string | number;
   change?: string;
   trend?: "up" | "down" | "neutral";
