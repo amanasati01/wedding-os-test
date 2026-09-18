@@ -4,7 +4,7 @@ type SummaryCardProps = {
   title: string;
   value: string | number;
   change?: string;
-  trend?: "up" | "down" | "neutral";
+  trend?: "up" | "down" | "neutral" | "right" | "left";
 };
 
 const trendColors: Record<string, string> = {
